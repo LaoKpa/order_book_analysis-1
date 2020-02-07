@@ -60,7 +60,13 @@ def run():
 	'''
 	Reads the LIMITED data for SBER
 	'''
-	query = 'SELECT * FROM SBER_train LIMIT 500'
+	query = '''
+		SELECT * FROM (
+			SELECT * FROM SBER_train 
+			ORDER BY date_time DESC LIMIT 500
+		)Var1
+		ORDER BY date_time ASC
+	'''
 	df = pd.read_sql(query, engine)
 	
 	'''
@@ -139,7 +145,7 @@ def run():
 	temp_df = temp_df.dropna()
 	temp_df.shape
 	
-	print(temp_df.columns)
+	print(temp_df.head(100))
 
 
 if __name__ == '__main__':
