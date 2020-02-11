@@ -1,7 +1,7 @@
 '''
 Data ingestion
 '''
-import pickle
+from joblib import load
 from sqlalchemy import create_engine
 
 '''
@@ -58,8 +58,9 @@ list_with_indicators = [
 '''
 Uploads the model
 '''
-file_with_model = 'SBER_model.sav'
-clf = pickle.load(open(file_with_model, 'rb'))
+file_with_model = '/home/quotermin/ml/trading/' +\
+    'candles_ticks_orderbook/SBER_model.joblib'
+clf = load(file_with_model)
 
 def run():
 	
