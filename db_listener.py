@@ -21,7 +21,7 @@ Creates MySQL connection object
 protocol_user_pass = 'mysql://Quotermain:Quotermain233@'
 host_port_db = '192.168.0.105:3306/trading_data'
 engine = create_engine(
-    protocol_user_pass + host_port_db
+	protocol_user_pass + host_port_db
 )
 
 '''
@@ -29,22 +29,22 @@ Creates collections with timeframes
 for candles and indicators
 '''
 dict_of_tf = {
-    '1_': 480, #problem
-    '4_': 120,
-    '15_': 32,
-    '30_': 16, #problem
-    '2_': 240, #problem
-    '120_': 4,
-    '20_': 24, #problem
-    '240_': 2,
-    '5_': 96,
-    '6_': 80,
-    '10_': 48, #problem
-    '3_': 160,
-    '60_': 8
+	'1_': 480, #problem
+	'4_': 120,
+	'15_': 32,
+	'30_': 16, #problem
+	'2_': 240, #problem
+	'120_': 4,
+	'20_': 24, #problem
+	'240_': 2,
+	'5_': 96,
+	'6_': 80,
+	'10_': 48, #problem
+	'3_': 160,
+	'60_': 8
 }
 list_with_indicators = [
-    'SMA', 'SMM', 'EMA_13', 'EMA_26', 'EMA_DIF', 
+	'SMA', 'SMM', 'EMA_13', 'EMA_26', 'EMA_DIF', 
 	'DEMA', 'TEMA', 'TRIMA', 'TRIX', 'VAMA', 'ER', 
 	'ZLEMA', 'WMA', 'HMA', 'EVWMA', 'VWAP', 'SMMA', 
 	'MOM', 'ROC', 'RSI', 'IFT_RSI', 'TR', 'ATR', 
@@ -52,8 +52,14 @@ list_with_indicators = [
 	'STOCHRSI', 'WILLIAMS', 'UO', 'AO', 'TP', 'ADL', 
 	'CHAIKIN', 'MFI', 'OBV', 'WOBV', 'VZO', 'EFI', 
 	'CFI', 'EMV', 'CCI', 'COPP', 'CMO', 'FISH', 
-    'SQZMI', 'VPT', 'FVE', 'VFI', 'MSD', 'return'
+	'SQZMI', 'VPT', 'FVE', 'VFI', 'MSD', 'return'
 ]
+
+'''
+Uploads the model
+'''
+file_with_model = 'SBER_model.sav'
+clf = pickle.load(open(file_with_model, 'rb'))
 
 def run():
 	
@@ -63,7 +69,7 @@ def run():
 	query = '''
 		SELECT * FROM (
 			SELECT * FROM SBER_train 
-			ORDER BY date_time DESC LIMIT 500
+			ORDER BY date_time DESC LIMIT 3000
 		)Var1
 		ORDER BY date_time ASC
 	'''
@@ -95,7 +101,7 @@ def run():
 		:, 'bid_count_10':'bid_count_1'
 	]
 	df_bid_count_proportion =\
-      BC_cols.div(BC_cols.sum(axis=1), axis=0)
+	  BC_cols.div(BC_cols.sum(axis=1), axis=0)
 	
 	'''
 	Calculates offer/bid ratio per row
@@ -143,9 +149,15 @@ def run():
 			temp_df, key, list_with_indicators
 		)
 	temp_df = temp_df.dropna()
-	temp_df.shape
 	
-	print(temp_df.head(100))
+	print(temp_df.shape)
+	
+	'''
+	Makes predictions from the latest uploaded data
+	'''
+	y_pred = clf.predict(temp_df)
+	
+	print(y_pred[-1])
 
 
 if __name__ == '__main__':
