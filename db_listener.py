@@ -1,8 +1,9 @@
 '''
-Data ingestion
+Data processing
 '''
 from joblib import load
 from sqlalchemy import create_engine
+import MySQLdb, datetime
 
 '''
 Statistical packages
@@ -20,15 +21,33 @@ from utils.predict import predict
 Constants
 '''
 PROBA_THRESH = 0.70
+DIST_TO_MAX = 2
+DIST_TO_MIN = 2
+ASSET = 'SBER'
 
 '''
 Creates MySQL connection object
+for reading the latest data from the DB
 '''
 protocol_user_pass = 'mysql://Quotermain:Quotermain233@'
 host_port_db = '192.168.0.105:3306/trading_data'
 engine = create_engine(
 	protocol_user_pass + host_port_db
 )
+
+'''
+Creates connection to the DB 
+to write a signal
+'''
+db = MySQLdb.connect(
+    host="192.168.0.105",
+    port = 3306,
+    user="Quotermain", 
+    passwd="Quotermain233", 
+    db="trading_data", 
+    charset='utf8'
+)
+cursor = db.cursor()
 
 '''
 Creates collections with timeframes 
@@ -65,7 +84,7 @@ list_with_indicators = [
 Uploads the model
 '''
 file_with_model = '/home/quotermin/ml/trading/' +\
-    'candles_ticks_orderbook/SBER_model.joblib'
+    'candles_ticks_orderbook/'+ ASSET +'_model.joblib'
 clf = load(file_with_model)
 
 def run():
@@ -75,11 +94,11 @@ def run():
 	'''
 	query = '''
 		SELECT * FROM (
-			SELECT * FROM SBER_train 
+			SELECT * FROM {}_train 
 			ORDER BY date_time DESC LIMIT 3000
 		)Var1
 		ORDER BY date_time ASC
-	'''
+	'''.format(ASSET)
 	df = pd.read_sql(query, engine)
 	
 	'''
@@ -161,10 +180,62 @@ def run():
 	
 	'''
 	Makes predictions from the latest uploaded data
+	with shifted threshold
 	'''
 	y_pred = predict(clf, temp_df, PROBA_THRESH)
 	
-	print(y_pred[-10:])
+	'''
+	Uploads a signal to the DB
+	'''
+	if y_pred[-1] == 'up':
+		sql = """UPDATE `trade_signals`
+			SET `signal` = 'long',
+			`dist_to_max`={},
+			`dist_to_min`={} 
+			WHERE `asset`='{}'"""\
+			.format(
+				DIST_TO_MAX,
+				DIST_TO_MIN,
+				ASSET
+			)
+		cursor.execute(sql)
+		db.commit()
+		print(
+			datetime.datetime.now().time(), 
+			'Long ', 
+			ASSET
+		)
+	elif y_pred[-1] == 'down':
+		sql = """UPDATE `trade_signals`
+			SET `signal` = 'short',
+			`dist_to_max`={},
+			`dist_to_min`={} 
+			WHERE `asset`='{}'"""\
+			.format(
+				DIST_TO_MAX,
+				DIST_TO_MIN,
+				ASSET
+			)
+		cursor.execute(sql)
+		db.commit()
+		print(
+			datetime.datetime.now().time(), 
+			'Short ', 
+			ASSET
+		)
+	elif y_pred[-1] == 'nothing':
+		sql = """UPDATE `trade_signals` 
+			SET `signal` = 'nothing',
+			`dist_to_max`=0,
+			`dist_to_min`=0
+			WHERE `asset`='{}'""".format(ASSET)
+		cursor.execute(sql)
+		db.commit()
+		print(
+			datetime.datetime.now().time(), 
+			'Nothing ', 
+			ASSET
+		)
 
 
 if __name__ == '__main__':
