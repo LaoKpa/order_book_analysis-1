@@ -14,6 +14,12 @@ import numpy as np
 Custom functions
 '''
 from utils.append_indicators import append_indicators
+from utils.predict import predict
+
+'''
+Constants
+'''
+PROBA_THRESH = 0.70
 
 '''
 Creates MySQL connection object
@@ -156,9 +162,9 @@ def run():
 	'''
 	Makes predictions from the latest uploaded data
 	'''
-	y_pred = clf.predict(temp_df)
+	y_pred = predict(clf, temp_df, PROBA_THRESH)
 	
-	print(y_pred[-1])
+	print(y_pred[-10:])
 
 
 if __name__ == '__main__':
