@@ -208,8 +208,8 @@ def run():
 			`dist_to_min`={} 
 			WHERE `asset`='{}'"""\
 			.format(
-				DIST_TO_MAX,
-				DIST_TO_MIN,
+				DIST_TO_MAX_HIGH,
+				DIST_TO_MIN_LOW,
 				ASSET
 			)
 		cursor.execute(sql)
@@ -226,8 +226,8 @@ def run():
 			`dist_to_min`={} 
 			WHERE `asset`='{}'"""\
 			.format(
-				DIST_TO_MAX,
-				DIST_TO_MIN,
+				DIST_TO_MAX_LOW,
+				DIST_TO_MIN_HIGH,
 				ASSET
 			)
 		cursor.execute(sql)
