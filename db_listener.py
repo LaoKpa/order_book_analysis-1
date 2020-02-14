@@ -1,5 +1,5 @@
 '''
-Data processing
+Data processing packages
 '''
 from joblib import load
 from sqlalchemy import create_engine
@@ -21,9 +21,23 @@ from utils.predict import predict
 Constants
 '''
 PROBA_THRESH = 0.70
-DIST_TO_MAX = 2
-DIST_TO_MIN = 2
+HIGHT_PERC = 70
+LOW_PERC = 30
 ASSET = 'SBER'
+# Unpacks the dictionary with distances
+file_with_distances = '/home/quotermin/ml/trading/' +\
+	'candles_ticks_orderbook/' +\
+    'SBER_distances.joblib'
+distances = load(file_with_distances)
+# Calculates percentiles
+DIST_TO_MAX_HIGH, DIST_TO_MAX_LOW = np.percentile(
+	distances['dist_to_max_per_range'], 
+	[HIGHT_PERC, LOW_PERC]
+)
+DIST_TO_MIN_HIGH, DIST_TO_MIN_LOW = np.percentile(
+	distances['dist_to_min_per_range'], 
+	[HIGHT_PERC, LOW_PERC]
+)
 
 '''
 Creates MySQL connection object
